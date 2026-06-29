@@ -91,124 +91,75 @@ def dedupe_jobs(jobs: List[Dict[str, Any]], existing_ids: set) -> List[Dict[str,
 # ---------------------------------------------------------------------
 # Indeed.ae Scraper (REAL JOBS)
 # ---------------------------------------------------------------------
-def fetch_indeed(country: str) -> List[Dict[str, Any]]:
-    """
-    Scrapes Indeed.ae for hospitality jobs in Gulf countries.
-    Indeed blocks aggressively — this uses a conservative approach.
-    """
-    jobs = []
-    country_domains = {
-        "UAE": "ae",
-        "Qatar": "qa",
-        "Oman": "om",
-        "Saudi Arabia": "sa",
-        "Kuwait": "kw",
-        "Bahrain": "bh",
-    }
-    domain = country_domains.get(country, "ae")
-    
-    search_terms = [
-        "hospitality",
-        "hotel",
-        "barista",
-        "waiter",
-        "housekeeping",
-        "customer service",
-    ]
 
+def fetch_indeed(country: str) -> List[Dict[str, Any]]:
+    """Search Google Jobs for Gulf hospitality positions."""
+    jobs = []
+    search_terms = ["hospitality jobs", "hotel jobs", "barista", "waiter", "housekeeping"]
+    
     for term in search_terms:
         try:
-            url = f"https://{domain}.indeed.com/jobs?q={quote_plus(term)}&l={quote_plus(country)}&sort=date"
-            print(f"  Scraping Indeed.{domain}: {url}")
+            query = f"{term} {country} gulf jobs"
+            url = f"https://www.google.com/search?q={quote_plus(query)}&ibp=htl;jobs"
+            print(f"  Searching: {query}")
             
             resp = requests.get(url, headers=HEADERS, timeout=15)
             if resp.status_code != 200:
-                print(f"    -> HTTP {resp.status_code}, skipping")
                 continue
-
+                
             soup = BeautifulSoup(resp.text, "lxml")
-            cards = soup.find_all("div", class_=re.compile("job_seen_beacon|jobsearch-ResultsList|cardOutline"))
+            # Google Jobs cards
+            cards = soup.find_all("div", class_=re.compile("BjJfJf|PUpOsf"))
             
-            # Indeed uses different layouts — try multiple selectors
-            if not cards:
-                cards = soup.find_all("li", class_=re.compile("css-5lfssm|eu4oa1w0"))
-            
-            for card in cards[:10]:  # Limit to 10 per search
+            for card in cards[:10]:
                 try:
-                    title_el = card.find("h2") or card.find("a", class_=re.compile("jcs-JobTitle"))
-                    company_el = card.find("span", class_=re.compile("companyName|company_name"))
-                    location_el = card.find("div", class_=re.compile("companyLocation|company_location"))
-                    salary_el = card.find("div", class_=re.compile("salary-snippet|attribute_snippet"))
-                    link_el = card.find("a", href=re.compile("/viewjob|/rc/clk"))
-
-                    if not title_el or not company_el:
+                    title_el = card.find("div", class_=re.compile("BjJfJf"))
+                    company_el = card.find("div", class_=re.compile("vNEEBe"))
+                    location_el = card.find("div", class_=re.compile("Qk80Jf"))
+                    
+                    if not title_el:
                         continue
-
+                        
                     title = title_el.get_text(strip=True)
-                    company = company_el.get_text(strip=True)
+                    company = company_el.get_text(strip=True) if company_el else "Unknown"
                     location = location_el.get_text(strip=True) if location_el else country
                     
-                    # Extract city from location
                     city = country
                     for c in COUNTRY_INFO.get(country, []):
                         if c.lower() in location.lower():
                             city = c
                             break
-
-                    # Salary parsing
-                    salary_min = 0
-                    salary_max = 0
-                    if salary_el:
-                        salary_text = salary_el.get_text(strip=True)
-                        nums = re.findall(r'[\d,]+', salary_text)
-                        if len(nums) >= 2:
-                            salary_min = int(nums[0].replace(",", ""))
-                            salary_max = int(nums[1].replace(",", ""))
-                        elif len(nums) == 1:
-                            salary_min = int(nums[0].replace(",", ""))
-
-                    url_link = ""
-                    if link_el:
-                        href = link_el.get("href", "")
-                        if href.startswith("/"):
-                            url_link = f"https://{domain}.indeed.com{href}"
-                        elif href.startswith("http"):
-                            url_link = href
-
+                    
                     job_data = {
                         "id": "",
                         "title": title,
                         "company": company,
                         "country": country,
                         "city": city,
-                        "salary_min": salary_min if salary_min > 0 else 0,
-                        "salary_max": salary_max if salary_max > 0 else 0,
+                        "salary_min": 0,
+                        "salary_max": 0,
                         "currency": "USD",
-                        "visa_sponsorship": None,  # Will be detected by scam_detector
+                        "visa_sponsorship": None,
                         "accommodation": None,
-                        "description": title,
-                        "source": "Indeed",
-                        "url": url_link,
+                        "description": f"{title} at {company} in {location}",
+                        "source": "Google Jobs",
+                        "url": url,
                         "posted_date": date.today().isoformat(),
                         "company_verified": True,
                     }
                     job_data["id"] = generate_job_id(job_data)
                     jobs.append(job_data)
-
-                except Exception as e:
-                    print(f"    -> Error parsing card: {e}")
+                    
+                except Exception:
                     continue
-
-            # Be polite to Indeed's servers
-            time.sleep(2)
-
+                    
+            time.sleep(3)
+            
         except Exception as e:
-            print(f"  -> Indeed.{domain} error for '{term}': {e}")
-            continue
-
-    print(f"  -> Indeed.{domain}: {len(jobs)} jobs found")
+            print(f"  -> Error: {e}")
+            
+    print(f"  -> Google Jobs ({country}): {len(jobs)} jobs found")
     return jobs
-
 
 # ---------------------------------------------------------------------
 # Bayt.com Scraper (REAL JOBS)
