@@ -1,0 +1,181 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Dashboard — GulfJobs AI Agent</title>
+<meta name="description" content="Your active job agent, match statistics, saved jobs and daily reports." />
+<link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 16 16%22><circle cx=%228%22 cy=%228%22 r=%227%22 fill=%22%23ffb454%22/></svg>" />
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;600;700&family=Inter:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet" />
+<link rel="stylesheet" href="assets/css/styles.css" />
+</head>
+<body>
+
+<nav class="nav">
+  <div class="wrap">
+    <a href="index.html" class="nav-logo"><span class="dot"></span> GulfJobs AI Agent</a>
+    <div class="nav-links">
+      <a href="index.html#how-it-works">How it works</a>
+      <a href="index.html#telegram">Telegram</a>
+    </div>
+    <div class="nav-cta">
+      <a href="create-agent.html" class="btn btn-primary btn-sm">New agent</a>
+    </div>
+  </div>
+</nav>
+
+<div class="dash-shell">
+  <aside class="dash-side">
+    <div class="side-link active" data-panel="overview">📊 Overview</div>
+    <div class="side-link" data-panel="matches">🎯 Latest Opportunities</div>
+    <div class="side-link" data-panel="saved">⭐ Saved Jobs</div>
+    <div class="side-link" data-panel="reports">🗞️ Daily Report</div>
+    <div class="side-link" data-panel="agent">⚙️ Agent Settings</div>
+  </aside>
+
+  <main class="dash-main">
+
+    <div class="no-agent-banner" id="noAgentBanner" hidden>
+      <div>
+        <strong>No job agent loaded on this device.</strong>
+        <div class="lookup-row">
+          <input type="text" id="lookupUsername" placeholder="Your Telegram username (e.g. aisha_r)" />
+          <button class="btn btn-indigo btn-sm" id="lookupBtn">Load agent</button>
+        </div>
+      </div>
+      <a href="create-agent.html" class="btn btn-primary btn-sm">Create a new agent</a>
+    </div>
+
+    <!-- OVERVIEW -->
+    <section class="dash-panel" data-panel="overview">
+      <div class="dash-header">
+        <div>
+          <h1 id="greeting">Your dashboard</h1>
+          <p id="agentSummaryLine">Loading agent…</p>
+        </div>
+        <button class="btn btn-ghost btn-sm" id="refreshBtn">↻ Refresh jobs</button>
+      </div>
+
+      <div class="stat-grid">
+        <div class="stat-card">
+          <div class="stat-label">Jobs tracked</div>
+          <div class="stat-value" id="statTotal">0</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-label">High matches</div>
+          <div class="stat-value amber" id="statHigh">0</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-label">Visa-sponsored</div>
+          <div class="stat-value green" id="statVisa">0</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-label">Saved jobs</div>
+          <div class="stat-value" id="statSaved">0</div>
+        </div>
+      </div>
+
+      <div class="panel">
+        <div class="panel-head">
+          <h2>Active Job Agent</h2>
+          <span class="muted" id="agentCreatedAt"></span>
+        </div>
+        <div id="agentDetails"></div>
+      </div>
+
+      <div class="panel">
+        <div class="panel-head">
+          <h2>Best opportunity right now</h2>
+        </div>
+        <div id="bestJobSlot" class="job-list"></div>
+      </div>
+    </section>
+
+    <!-- MATCHES -->
+    <section class="dash-panel" data-panel="matches" hidden>
+      <div class="dash-header">
+        <div>
+          <h1>Latest opportunities</h1>
+          <p>Ranked by AI Match Score against your active agent.</p>
+        </div>
+      </div>
+      <div class="panel">
+        <div class="panel-head">
+          <h2>All matching jobs</h2>
+          <span class="muted" id="matchesCount"></span>
+        </div>
+        <div id="matchesList" class="job-list"></div>
+      </div>
+    </section>
+
+    <!-- SAVED -->
+    <section class="dash-panel" data-panel="saved" hidden>
+      <div class="dash-header">
+        <div>
+          <h1>Saved jobs</h1>
+          <p>Jobs you've bookmarked from your matches.</p>
+        </div>
+      </div>
+      <div class="panel">
+        <div class="panel-head"><h2>Your shortlist</h2></div>
+        <div id="savedList" class="job-list"></div>
+      </div>
+    </section>
+
+    <!-- REPORTS -->
+    <section class="dash-panel" data-panel="reports" hidden>
+      <div class="dash-header">
+        <div>
+          <h1>Daily report</h1>
+          <p>A snapshot of today's scan, the same summary sent on Telegram via /report.</p>
+        </div>
+      </div>
+      <div class="panel">
+        <div class="report-grid">
+          <div class="stat-card"><div class="stat-label">Total found</div><div class="stat-value" id="repTotal">0</div></div>
+          <div class="stat-card"><div class="stat-label">High matches</div><div class="stat-value amber" id="repHigh">0</div></div>
+          <div class="stat-card"><div class="stat-label">Visa-sponsored</div><div class="stat-value green" id="repVisa">0</div></div>
+          <div class="stat-card"><div class="stat-label">Flagged scams</div><div class="stat-value" id="repScam">0</div></div>
+        </div>
+      </div>
+      <div class="panel">
+        <div class="panel-head"><h2>Best opportunity today</h2></div>
+        <div id="repBestSlot" class="job-list"></div>
+      </div>
+    </section>
+
+    <!-- AGENT SETTINGS -->
+    <section class="dash-panel" data-panel="agent" hidden>
+      <div class="dash-header">
+        <div>
+          <h1>Agent settings</h1>
+          <p>Your stored preferences on this device.</p>
+        </div>
+      </div>
+      <div class="panel">
+        <div id="agentSettingsDetails"></div>
+        <div style="margin-top:20px; display:flex; gap:12px;">
+          <a href="create-agent.html" class="btn btn-indigo btn-sm">Edit / recreate agent</a>
+          <button class="btn btn-ghost btn-sm" id="clearAgentBtn">Remove agent from this device</button>
+        </div>
+      </div>
+    </section>
+
+  </main>
+</div>
+
+<footer class="footer">
+  <div class="wrap">
+    <span>© <span data-year></span> GulfJobs AI Agent</span>
+    <span>Data refreshes automatically via GitHub Actions</span>
+  </div>
+</footer>
+
+<script src="assets/js/matchEngine.js"></script>
+<script src="assets/js/scamDetector.js"></script>
+<script src="assets/js/dedupe.js"></script>
+<script src="assets/js/app.js"></script>
+<script src="assets/js/dashboard.js"></script>
+</body>
+</html>

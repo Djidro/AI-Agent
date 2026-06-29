@@ -1,0 +1,146 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Create Your Job Agent — GulfJobs AI Agent</title>
+<meta name="description" content="Set up your personal AI job hunting agent for hospitality jobs across the Gulf in under two minutes." />
+<link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 16 16%22><circle cx=%228%22 cy=%228%22 r=%227%22 fill=%22%23ffb454%22/></svg>" />
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;600;700&family=Inter:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet" />
+<link rel="stylesheet" href="assets/css/styles.css" />
+</head>
+<body>
+
+<nav class="nav">
+  <div class="wrap">
+    <a href="index.html" class="nav-logo"><span class="dot"></span> GulfJobs AI Agent</a>
+    <div class="nav-links">
+      <a href="index.html#how-it-works">How it works</a>
+      <a href="index.html#countries">Countries</a>
+      <a href="index.html#telegram">Telegram</a>
+    </div>
+    <div class="nav-cta">
+      <a href="dashboard.html" class="btn btn-ghost btn-sm">Dashboard</a>
+    </div>
+  </div>
+</nav>
+
+<main class="section">
+  <div class="wrap">
+    <div class="section-head" style="margin: 0 auto 36px; text-align:center;">
+      <p class="section-eyebrow">Setup — takes about 2 minutes</p>
+      <h2>Build your personal job agent</h2>
+      <p class="section-sub">Tell the agent what you're looking for once. It scans the Gulf market continuously and messages you on Telegram only when something matches.</p>
+    </div>
+
+    <div class="form-shell">
+      <div class="form-progress" id="progressBar">
+        <span class="active" data-step="1"></span>
+        <span data-step="2"></span>
+        <span data-step="3"></span>
+      </div>
+
+      <form id="agentForm" novalidate>
+
+        <!-- STEP 1 -->
+        <section class="form-step" data-step="1">
+          <div class="field" id="field-name">
+            <label for="name">Your name</label>
+            <input type="text" id="name" name="name" placeholder="e.g. Aïsha Rahman" autocomplete="name" />
+            <p class="error-text">Please enter your name.</p>
+          </div>
+          <div class="field" id="field-telegram">
+            <label for="telegram">Telegram username</label>
+            <input type="text" id="telegram" name="telegram" placeholder="@yourusername" autocomplete="off" />
+            <p class="hint">Don't have one yet? Install Telegram, set a username in Settings, then come back.</p>
+            <p class="error-text">Enter a valid Telegram username, e.g. @yourusername.</p>
+          </div>
+          <div class="form-actions">
+            <span></span>
+            <button type="button" class="btn btn-primary" data-action="next">Continue</button>
+          </div>
+        </section>
+
+        <!-- STEP 2 -->
+        <section class="form-step" data-step="2" hidden>
+          <div class="field">
+            <label>Preferred countries</label>
+            <div class="chip-select" id="countryChips">
+              <label><input type="checkbox" name="countries" value="UAE"><span>🇦🇪 UAE</span></label>
+              <label><input type="checkbox" name="countries" value="Qatar"><span>🇶🇦 Qatar</span></label>
+              <label><input type="checkbox" name="countries" value="Oman"><span>🇴🇲 Oman</span></label>
+              <label><input type="checkbox" name="countries" value="Saudi Arabia"><span>🇸🇦 Saudi Arabia</span></label>
+              <label><input type="checkbox" name="countries" value="Kuwait"><span>🇰🇼 Kuwait</span></label>
+              <label><input type="checkbox" name="countries" value="Bahrain"><span>🇧🇭 Bahrain</span></label>
+            </div>
+            <p class="error-text" id="err-countries">Pick at least one country.</p>
+          </div>
+          <div class="field">
+            <label>Preferred job titles</label>
+            <div class="chip-select" id="titleChips">
+              <label><input type="checkbox" name="titles" value="Barista"><span>☕ Barista</span></label>
+              <label><input type="checkbox" name="titles" value="Waiter"><span>🍽️ Waiter</span></label>
+              <label><input type="checkbox" name="titles" value="Hotel Staff"><span>🛎️ Hotel Staff</span></label>
+              <label><input type="checkbox" name="titles" value="Hospitality"><span>🏨 Hospitality</span></label>
+              <label><input type="checkbox" name="titles" value="Customer Service"><span>🎧 Customer Service</span></label>
+            </div>
+            <p class="error-text" id="err-titles">Pick at least one role.</p>
+          </div>
+          <div class="field">
+            <label for="salary">Minimum monthly salary (USD)</label>
+            <input type="number" id="salary" name="salary" min="0" step="50" placeholder="e.g. 600" />
+            <p class="hint">Leave at 0 if you don't want to filter by salary.</p>
+          </div>
+          <div class="form-actions">
+            <button type="button" class="btn btn-ghost" data-action="back">Back</button>
+            <button type="button" class="btn btn-primary" data-action="next">Continue</button>
+          </div>
+        </section>
+
+        <!-- STEP 3 -->
+        <section class="form-step" data-step="3" hidden>
+          <div class="toggle-row">
+            <div class="label">Visa sponsorship required<span class="sub">Only match jobs that explicitly mention visa support</span></div>
+            <label class="switch"><input type="checkbox" id="visaRequired" name="visaRequired"><span class="track"></span></label>
+          </div>
+          <div class="toggle-row">
+            <div class="label">Accommodation required<span class="sub">Only match jobs that include housing/accommodation</span></div>
+            <label class="switch"><input type="checkbox" id="accommodationRequired" name="accommodationRequired"><span class="track"></span></label>
+          </div>
+          <div class="form-actions">
+            <button type="button" class="btn btn-ghost" data-action="back">Back</button>
+            <button type="submit" class="btn btn-primary">Create my agent</button>
+          </div>
+        </section>
+
+        <!-- SUCCESS -->
+        <section class="form-step" data-step="success" hidden>
+          <div class="success-panel">
+            <div class="check">✓</div>
+            <h3 style="font-family:var(--font-display); font-size:20px; margin-bottom:10px;">Your agent is ready</h3>
+            <p class="section-sub">One last step — activate it on Telegram so it can message you the moment a match appears.</p>
+            <a id="telegramDeepLink" href="#" target="_blank" class="btn btn-indigo btn-block" style="margin-top:20px;">Activate on Telegram</a>
+            <div class="deeplink-box">
+              <span class="hint">If the button above doesn't open Telegram, search for the bot manually, tap <strong>Start</strong>, and just answer its setup questions — it works without the link too.</span>
+              <code id="deeplinkText"></code>
+            </div>
+            <a href="dashboard.html" class="btn btn-ghost btn-block">Go to my dashboard</a>
+          </div>
+        </section>
+      </form>
+    </div>
+  </div>
+</main>
+
+<footer class="footer">
+  <div class="wrap">
+    <span>© <span data-year></span> GulfJobs AI Agent</span>
+    <span>Built for hospitality talent across the Gulf</span>
+  </div>
+</footer>
+
+<script src="assets/js/app.js"></script>
+<script src="assets/js/create-agent.js"></script>
+</body>
+</html>

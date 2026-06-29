@@ -1,298 +1,210 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=yes">
-  <title>GulfJobs AI Agent — Your Personal Job Hunter</title>
-  <link rel="preconnect" href="https://fonts.googleapis.com">
-  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Inter:opsz,wght@14..32,400;14..32,500;14..32,600;14..32,700&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="css/styles.css">
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>GulfJobs AI Agent — Your AI job hunter for Gulf hospitality work</title>
+<meta name="description" content="Set up one AI agent and let it search Gulf hospitality jobs around the clock, sending only your best matches straight to Telegram." />
+<link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 16 16%22><circle cx=%228%22 cy=%228%22 r=%227%22 fill=%22%23ffb454%22/></svg>" />
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;600;700&family=Inter:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet" />
+<link rel="stylesheet" href="assets/css/styles.css" />
 </head>
 <body>
-  <nav class="navbar">
-    <div class="container nav-container">
-      <a href="#" class="logo">GulfJobs<span class="logo-accent">AI</span></a>
-      <div class="nav-links">
-        <a href="#features">Features</a>
-        <a href="#how-it-works">How it Works</a>
-        <a href="#countries">Countries</a>
-        <a href="#create-agent" class="btn btn-primary nav-cta">Create Agent</a>
+
+<nav class="nav">
+  <div class="wrap">
+    <a href="index.html" class="nav-logo"><span class="dot"></span> GulfJobs AI Agent</a>
+    <div class="nav-links">
+      <a href="#benefits">Benefits</a>
+      <a href="#how-it-works">How it works</a>
+      <a href="#countries">Countries</a>
+      <a href="#telegram">Telegram</a>
+    </div>
+    <div class="nav-cta">
+      <a href="dashboard.html" class="btn btn-ghost btn-sm">Dashboard</a>
+      <a href="create-agent.html" class="btn btn-primary btn-sm" data-cta="primary">Create my agent</a>
+    </div>
+  </div>
+</nav>
+
+<header class="hero">
+  <div class="wrap hero-grid">
+    <div>
+      <div class="eyebrow">● Active 24/7 — even while you sleep</div>
+      <h1>An AI agent that hunts <span class="accent">Gulf hospitality jobs</span> for you, all night long.</h1>
+      <p class="hero-sub">Set your preferences once. GulfJobs AI Agent keeps scanning UAE, Qatar, Oman, Saudi Arabia, Kuwait and Bahrain for barista, waiter, hotel and customer service roles — and pings you on Telegram only when something is actually worth your time.</p>
+      <div class="hero-actions">
+        <a href="create-agent.html" class="btn btn-primary" data-cta="primary">Create my agent — it's free</a>
+        <a href="#how-it-works" class="btn btn-ghost">See how it works</a>
+      </div>
+      <div class="hero-meta">
+        <span>📡 <strong data-live-jobs>—</strong>&nbsp;jobs currently tracked</span>
+        <span>🌍 6 Gulf countries</span>
+        <span>🔔 Delivered on Telegram</span>
       </div>
     </div>
-  </nav>
 
-  <main>
-    <!-- Hero Section -->
-    <section class="hero container">
-      <div class="hero-grid">
-        <div class="hero-content">
-          <div class="hero-badge">🔍 AI-Powered Job Search</div>
-          <h1>Your personal job agent for the Gulf. <span class="text-gradient">Works while you sleep.</span></h1>
-          <p class="hero-description">Stop scrolling endless listings. Build your agent once and receive only handpicked hospitality jobs in UAE, Qatar, Saudi Arabia & more — delivered directly to Telegram.</p>
-          <div class="hero-actions">
-            <a href="#create-agent" class="btn btn-primary btn-large">Build My Agent →</a>
-            <a href="#how-it-works" class="btn btn-secondary btn-large">See how it works</a>
-          </div>
-          <div class="hero-stats">
-            <div class="stat">
-              <span class="stat-number" id="totalJobsStat">500+</span>
-              <span class="stat-label">Active jobs</span>
-            </div>
-            <div class="stat">
-              <span class="stat-number">6</span>
-              <span class="stat-label">Countries</span>
-            </div>
-            <div class="stat">
-              <span class="stat-number">24/7</span>
-              <span class="stat-label">Auto-search</span>
-            </div>
-          </div>
-        </div>
-        <div class="hero-visual">
-          <div class="dashboard-preview">
-            <div class="preview-header">
-              <div class="preview-dots">
-                <span></span><span></span><span></span>
-              </div>
-              <span class="preview-title">Live Agent Dashboard</span>
-            </div>
-            <div class="preview-card">
-              <div class="preview-agent">
-                <div class="agent-avatar">🤖</div>
-                <div class="agent-info">
-                  <strong>Ahmed's Agent</strong>
-                  <span>Scanning 6 countries</span>
-                </div>
-                <span class="badge badge-green">Active</span>
-              </div>
-              <div class="preview-match">
-                <div class="match-row">
-                  <span>☕ Barista - Dubai</span>
-                  <span class="match-score">94% match</span>
-                </div>
-                <div class="match-row">
-                  <span>🛎️ Waiter - Doha</span>
-                  <span class="match-score">91% match</span>
-                </div>
-                <div class="match-row">
-                  <span>🏨 Front Desk - Riyadh</span>
-                  <span class="badge badge-blue">Visa</span>
-                  <span class="match-score">88% match</span>
-                </div>
-              </div>
-              <div class="preview-telegram">
-                <span>📱 Sent via Telegram 5m ago</span>
-              </div>
-            </div>
-          </div>
-        </div>
-      </div>
-    </section>
-
-    <!-- Benefits / Features -->
-    <section id="features" class="features container">
-      <div class="section-header">
-        <h2>Why use GulfJobs AI Agent?</h2>
-        <p>Designed for hospitality professionals who want to work in the Gulf.</p>
-      </div>
-      <div class="features-grid">
-        <div class="feature-card">
-          <div class="feature-icon">🎯</div>
-          <h3>AI Match Score</h3>
-          <p>Every job gets a match score (0-100) based on your exact preferences: country, role, salary, visa, and accommodation.</p>
-        </div>
-        <div class="feature-card">
-          <div class="feature-icon">🛡️</div>
-          <h3>Scam Detection</h3>
-          <p>Automatic flags for unrealistic salaries, missing company info, and suspicious links. Your safety matters.</p>
-        </div>
-        <div class="feature-card">
-          <div class="feature-icon">🔁</div>
-          <h3>Zero Duplicates</h3>
-          <p>We never send you the same job twice. Smart duplicate detection keeps your feed clean.</p>
-        </div>
-        <div class="feature-card">
-          <div class="feature-icon">📱</div>
-          <h3>Telegram Delivery</h3>
-          <p>Get instant notifications on Telegram. Check /jobs, /visa, or /report anytime.</p>
-        </div>
-        <div class="feature-card">
-          <div class="feature-icon">🛂</div>
-          <h3>Visa Sponsor Radar</h3>
-          <p>We highlight jobs that mention visa sponsorship, work permits, or relocation assistance.</p>
-        </div>
-        <div class="feature-card">
-          <div class="feature-icon">☁️</div>
-          <h3>100% Free & Automated</h3>
-          <p>Runs on GitHub Actions. No server costs, fully open architecture. Deploy your own in minutes.</p>
-        </div>
-      </div>
-    </section>
-
-    <!-- How it Works -->
-    <section id="how-it-works" class="how-it-works container">
-      <div class="section-header">
-        <h2>Your agent in 3 steps</h2>
-      </div>
-      <div class="steps">
-        <div class="step">
-          <div class="step-number">01</div>
-          <h3>Create Agent</h3>
-          <p>Tell us your name, Telegram, preferred countries (UAE, Qatar, etc.), job titles, and minimum salary.</p>
-        </div>
-        <div class="step-divider"></div>
-        <div class="step">
-          <div class="step-number">02</div>
-          <h3>AI Scans Jobs</h3>
-          <p>Our engine scans curated hospitality jobs, calculates match scores, and filters out scams.</p>
-        </div>
-        <div class="step-divider"></div>
-        <div class="step">
-          <div class="step-number">03</div>
-          <h3>Get Telegram Alerts</h3>
-          <p>High-match jobs land in your Telegram. Use /commands to interact with your agent.</p>
-        </div>
-      </div>
-    </section>
-
-    <!-- Supported Countries -->
-    <section id="countries" class="countries container">
-      <div class="section-header">
-        <h2>6 Gulf countries covered</h2>
-      </div>
-      <div class="country-grid">
-        <div class="country-tag">🇦🇪 UAE</div>
-        <div class="country-tag">🇶🇦 Qatar</div>
-        <div class="country-tag">🇴🇲 Oman</div>
-        <div class="country-tag">🇸🇦 Saudi Arabia</div>
-        <div class="country-tag">🇰🇼 Kuwait</div>
-        <div class="country-tag">🇧🇭 Bahrain</div>
-      </div>
-    </section>
-
-    <!-- Create Agent Form (Core App) -->
-    <section id="create-agent" class="create-agent container">
-      <div class="form-card">
-        <div class="form-header">
-          <h2>🤖 Create Your Job Agent</h2>
-          <p>Configure once. Jobs come to you automatically.</p>
-        </div>
-        <form id="agentForm" class="agent-form">
-          <div class="form-row">
-            <div class="form-group">
-              <label for="name">Full Name *</label>
-              <input type="text" id="name" placeholder="Ahmed Khan" required>
-            </div>
-            <div class="form-group">
-              <label for="telegram">Telegram Username *</label>
-              <input type="text" id="telegram" placeholder="@yourusername" required>
-            </div>
-          </div>
-
-          <div class="form-group">
-            <label>Preferred Countries *</label>
-            <div class="checkbox-grid" id="countriesCheckbox">
-              <label class="checkbox-card"><input type="checkbox" value="UAE" checked> 🇦🇪 UAE</label>
-              <label class="checkbox-card"><input type="checkbox" value="Qatar" checked> 🇶🇦 Qatar</label>
-              <label class="checkbox-card"><input type="checkbox" value="Oman"> 🇴🇲 Oman</label>
-              <label class="checkbox-card"><input type="checkbox" value="Saudi Arabia"> 🇸🇦 Saudi Arabia</label>
-              <label class="checkbox-card"><input type="checkbox" value="Kuwait"> 🇰🇼 Kuwait</label>
-              <label class="checkbox-card"><input type="checkbox" value="Bahrain"> 🇧🇭 Bahrain</label>
-            </div>
-          </div>
-
-          <div class="form-group">
-            <label for="jobTitles">Preferred Job Titles *</label>
-            <select id="jobTitles" multiple required>
-              <option value="Barista" selected>Barista</option>
-              <option value="Waiter" selected>Waiter</option>
-              <option value="Hotel Staff">Hotel Staff</option>
-              <option value="Receptionist">Receptionist</option>
-              <option value="Housekeeping">Housekeeping</option>
-              <option value="Customer Service">Customer Service</option>
-              <option value="Chef">Chef</option>
-            </select>
-            <small>Hold Ctrl/Cmd to select multiple</small>
-          </div>
-
-          <div class="form-row">
-            <div class="form-group">
-              <label for="minSalary">Minimum Salary (Monthly, USD)</label>
-              <input type="number" id="minSalary" placeholder="e.g. 800" value="800">
-            </div>
-            <div class="form-group">
-              <label>Visa Sponsorship Required?</label>
-              <div class="radio-group">
-                <label class="radio-card"><input type="radio" name="visaSponsor" value="yes"> Yes</label>
-                <label class="radio-card"><input type="radio" name="visaSponsor" value="no" checked> No preference</label>
-              </div>
-            </div>
-            <div class="form-group">
-              <label>Accommodation Required?</label>
-              <div class="radio-group">
-                <label class="radio-card"><input type="radio" name="accommodation" value="yes"> Yes</label>
-                <label class="radio-card"><input type="radio" name="accommodation" value="no" checked> No preference</label>
-              </div>
-            </div>
-          </div>
-
-          <button type="submit" class="btn btn-primary btn-large btn-full">🚀 Activate My Agent</button>
-        </form>
-      </div>
-    </section>
-
-    <!-- Dashboard Section (Hidden until agent created) -->
-    <section id="dashboard" class="dashboard container" style="display: none;">
-      <div class="section-header">
-        <h2>📊 Your Dashboard</h2>
-      </div>
-      <div class="stats-grid" id="statsGrid">
-        <div class="stat-card">
-          <span class="stat-icon">🤖</span>
-          <div class="stat-details">
-            <span id="agentNameDisplay">-</span>
-            <span class="stat-sub">Active Agent</span>
-          </div>
-        </div>
-        <div class="stat-card">
-          <span class="stat-value" id="totalMatches">0</span>
-          <span class="stat-sub">Jobs Matched</span>
-        </div>
-        <div class="stat-card">
-          <span class="stat-value" id="visaJobs">0</span>
-          <span class="stat-sub">Visa Sponsored</span>
-        </div>
-        <div class="stat-card">
-          <span class="stat-value" id="highMatches">0</span>
-          <span class="stat-sub">High Matches (>80%)</span>
+    <div class="phone" aria-hidden="true">
+      <div class="phone-head">
+        <div class="avatar"></div>
+        <div>
+          <div class="title">GulfJobs AI Agent</div>
+          <div class="status">● online — scanning</div>
         </div>
       </div>
 
-      <div class="jobs-section">
-        <h3>🔥 Latest Opportunities</h3>
-        <div id="jobsContainer" class="jobs-list">
-          <!-- Dynamically filled -->
+      <div class="bubble">
+        <div class="b-title">☕ Barista — Burj Al Arab Lounge</div>
+        <div class="b-meta">Dubai, UAE · USD 950/mo · Visa sponsored</div>
+        <span class="b-score">Match 92</span>
+      </div>
+      <div class="bubble">
+        <div class="b-title">🛎️ Hotel Front Desk — Pearl Resort</div>
+        <div class="b-meta">Doha, Qatar · USD 870/mo · Accommodation incl.</div>
+        <span class="b-score">Match 88</span>
+      </div>
+      <div class="bubble">
+        <div class="b-title">🍽️ Waiter — Marina Grill House</div>
+        <div class="b-meta">Muscat, Oman · USD 700/mo</div>
+        <span class="b-score">Match 81</span>
+      </div>
+
+      <div class="radar-strip">
+        <div class="radar-label"><span>NIGHT SHIFT RADAR</span><span>03:12 AM GST</span></div>
+        <div class="radar-track">
+          <div class="radar-ticks"><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span></div>
         </div>
       </div>
-      <div class="telegram-commands">
-        <h3>📱 Telegram Bot Commands</h3>
-        <div class="command-list">
-          <code>/start</code> <code>/jobs</code> <code>/matches</code> <code>/report</code> <code>/visa</code> <code>/help</code>
-        </div>
+    </div>
+  </div>
+</header>
+
+<section class="section" id="benefits">
+  <div class="wrap">
+    <div class="section-head">
+      <p class="section-eyebrow">Why it works</p>
+      <h2>Built for people who don't have time to scroll job boards</h2>
+      <p class="section-sub">One setup, then your agent does the repetitive part: searching, scoring, filtering, and watching for scams — across every major Gulf source.</p>
+    </div>
+    <div class="grid-3">
+      <div class="card">
+        <div class="card-icon">⚡</div>
+        <h3>Works while you're offline</h3>
+        <p>The agent runs on a schedule in the background. You don't need the app open, your phone on, or your laptop awake — it messages you on Telegram the moment a match appears.</p>
       </div>
-    </section>
-  </main>
+      <div class="card">
+        <div class="card-icon">🎯</div>
+        <h3>AI Match Score on every job</h3>
+        <p>Every listing is scored 0–100 against your country, role, salary, visa and accommodation preferences, so you only act on the ones actually worth your time.</p>
+      </div>
+      <div class="card">
+        <div class="card-icon">🛡️</div>
+        <h3>Scam &amp; duplicate filtering</h3>
+        <p>Suspicious listings — missing company details, unrealistic pay, sketchy links — get flagged automatically. Duplicate postings are silently dropped.</p>
+      </div>
+      <div class="card">
+        <div class="card-icon">🛂</div>
+        <h3>Visa sponsorship detection</h3>
+        <p>The agent reads job descriptions for visa sponsorship, work permits and relocation language, and highlights it clearly so you don't have to dig.</p>
+      </div>
+      <div class="card">
+        <div class="card-icon">📊</div>
+        <h3>Daily reports</h3>
+        <p>A short Telegram summary each day: total jobs found, high matches, visa-sponsored roles, and the single best opportunity available right now.</p>
+      </div>
+      <div class="card">
+        <div class="card-icon">🆓</div>
+        <h3>Completely free to run</h3>
+        <p>Hosted on GitHub Pages, automated with GitHub Actions, delivered through Telegram. No servers, no subscriptions, no hidden costs.</p>
+      </div>
+    </div>
+  </div>
+</section>
 
-  <footer class="footer container">
-    <p>⚡ GulfJobs AI Agent — Open Source MVP. Deploy free on GitHub Pages.</p>
-    <p class="footer-links">
-      <a href="#">Privacy</a> · <a href="#">Terms</a> · <a href="#">GitHub</a>
-    </p>
-  </footer>
+<section class="section alt" id="how-it-works">
+  <div class="wrap">
+    <div class="section-head">
+      <p class="section-eyebrow">How it works</p>
+      <h2>Three steps, then it runs itself</h2>
+      <p class="section-sub">There's a real order here — each step has to happen before the next one makes sense.</p>
+    </div>
+    <div class="steps">
+      <div class="step">
+        <div class="step-num">1</div>
+        <h3>Create your agent</h3>
+        <p>Tell it your target countries, roles, minimum salary, and whether you need visa sponsorship or accommodation. Takes about two minutes.</p>
+      </div>
+      <div class="step">
+        <div class="step-num">2</div>
+        <h3>It scans continuously</h3>
+        <p>A scheduled job searches hospitality listings across the Gulf, scores each one against your profile, checks for scams and duplicates.</p>
+      </div>
+      <div class="step">
+        <div class="step-num">3</div>
+        <h3>You get pinged on Telegram</h3>
+        <p>Only jobs that clear your match threshold land in your chat — with the score, the visa status, and a direct link to apply.</p>
+      </div>
+    </div>
+  </div>
+</section>
 
-  <div id="toast" class="toast"></div>
+<section class="section" id="countries">
+  <div class="wrap">
+    <div class="section-head">
+      <p class="section-eyebrow">Coverage</p>
+      <h2>Tracking hospitality roles across six Gulf markets</h2>
+      <p class="section-sub">Barista, waiter, hotel staff, hospitality and customer service positions, sourced for future integration with Indeed, Bayt, GulfTalent, Naukrigulf and direct career pages.</p>
+    </div>
+    <div class="country-grid">
+      <div class="country-chip"><div class="flag">🇦🇪</div><div class="name">UAE</div></div>
+      <div class="country-chip"><div class="flag">🇶🇦</div><div class="name">Qatar</div></div>
+      <div class="country-chip"><div class="flag">🇴🇲</div><div class="name">Oman</div></div>
+      <div class="country-chip"><div class="flag">🇸🇦</div><div class="name">Saudi Arabia</div></div>
+      <div class="country-chip"><div class="flag">🇰🇼</div><div class="name">Kuwait</div></div>
+      <div class="country-chip"><div class="flag">🇧🇭</div><div class="name">Bahrain</div></div>
+    </div>
+  </div>
+</section>
 
-  <script src="js/app.js"></script>
+<section class="section alt" id="telegram">
+  <div class="wrap">
+    <div class="tg-band">
+      <div>
+        <p class="section-eyebrow">Telegram-native</p>
+        <h2 style="margin-bottom:14px;">Your agent lives where you already check messages</h2>
+        <p class="section-sub" style="margin-bottom: 20px;">No new app to install or password to remember. Talk to the bot directly — it can register you, show your matches, and send a daily report on request.</p>
+        <a href="create-agent.html" class="btn btn-indigo" data-cta="primary">Connect Telegram</a>
+      </div>
+      <div class="cmd-list">
+        <div class="cmd-row"><span class="cmd">/start</span><span class="desc">Register or resume your job agent</span></div>
+        <div class="cmd-row"><span class="cmd">/jobs</span><span class="desc">See the latest opportunities found</span></div>
+        <div class="cmd-row"><span class="cmd">/matches</span><span class="desc">Your current high-score matches</span></div>
+        <div class="cmd-row"><span class="cmd">/visa</span><span class="desc">Only visa-sponsored listings</span></div>
+        <div class="cmd-row"><span class="cmd">/report</span><span class="desc">Today's summary report</span></div>
+        <div class="cmd-row"><span class="cmd">/help</span><span class="desc">List all available commands</span></div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section class="section">
+  <div class="wrap">
+    <div class="cta-band">
+      <h2>Stop refreshing job boards at 2am.</h2>
+      <p>Set up your agent once. Let it work the night shift instead of you.</p>
+      <a href="create-agent.html" class="btn btn-primary" data-cta="primary">Create my agent — it's free</a>
+    </div>
+  </div>
+</section>
+
+<footer class="footer">
+  <div class="wrap">
+    <span>© <span data-year></span> GulfJobs AI Agent</span>
+    <span>Built for hospitality talent across the Gulf · No paid services required</span>
+  </div>
+</footer>
+
+<script src="assets/js/app.js"></script>
 </body>
 </html>

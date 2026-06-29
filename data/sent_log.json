@@ -1,0 +1,6 @@
+{
+  "_comment": "Maps agent_id -> list of job ids already sent to that agent on Telegram. Read and updated by bot/notifier.py on every scheduled run so no job is ever sent twice.",
+  "sent": {
+    "agent_0001": ["job_0001"]
+  }
+}
