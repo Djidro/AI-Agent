@@ -1,30 +1,41 @@
 """
 scripts/scraper.py
 -----------------------------------------------------------------------
-Job source aggregator. Combines Google Jobs scraping + Indeed/Bayt
-with mock data as fallback.
+Job source aggregator using Adzuna API for real Gulf hospitality jobs.
+Falls back to mock data only when API is unavailable.
 
-Requires: pip install requests beautifulsoup4 lxml
+Requires: pip install requests python-dotenv
 -----------------------------------------------------------------------
 """
 
 from __future__ import annotations
 import json
+import os
 import random
-import re
-import time
 from datetime import date, timedelta
 from pathlib import Path
 from typing import Any, Dict, List
-from urllib.parse import quote_plus
 
 import requests
-from bs4 import BeautifulSoup
+from dotenv import load_dotenv
+
+load_dotenv()
 
 ROOT = Path(__file__).resolve().parent.parent
 JOBS_FILE = ROOT / "data" / "jobs.json"
 
-TITLES = ["Barista", "Waiter", "Hotel Front Desk Agent", "Housekeeping Staff", "Customer Service Representative"]
+ADZUNA_APP_ID = os.getenv("ADZUNA_APP_ID", "")
+ADZUNA_APP_KEY = os.getenv("ADZUNA_APP_KEY", "")
+
+# Adzuna country codes
+COUNTRY_CODES = {
+    "UAE": "ae",
+    "Qatar": "qa",
+    "Saudi Arabia": "sa",
+    "Kuwait": "kw",
+    "Bahrain": "bh",
+    "Oman": "om",
+}
 
 COUNTRY_INFO = {
     "UAE": ["Dubai", "Abu Dhabi", "Sharjah"],
@@ -36,21 +47,17 @@ COUNTRY_INFO = {
 }
 
 COMPANIES = [
-    "Burj Al Arab Lounge", "Pearl Resort & Spa", "Marina Grill House", "Costa Coffee Gulf",
-    "Shangri-La Hospitality Group", "Riyadh Grand Hotel", "Ooredoo Customer Care",
-    "Manama Bay Resort", "Jeddah Heights Hotel", "Salalah Garden Resort",
+    "Burj Al Arab Lounge", "Pearl Resort & Spa", "Marina Grill House",
+    "Shangri-La Hospitality Group", "Riyadh Grand Hotel", "Manama Bay Resort",
 ]
 
-SOURCES = ["Google Jobs", "Indeed", "Bayt", "GulfTalent", "Naukrigulf"]
+TITLES = ["Barista", "Waiter", "Hotel Staff", "Housekeeping", "Customer Service"]
 
-HEADERS = {
-    "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36",
-    "Accept-Language": "en-US,en;q=0.9",
-}
+HEADERS = {"User-Agent": "GulfJobs-AI-Agent/1.0"}
 
 
 # ---------------------------------------------------------------------
-# Job ID generation (stable deduplication)
+# Job ID helpers
 # ---------------------------------------------------------------------
 def _job_signature(job: Dict[str, Any]) -> str:
     parts = [job.get("title"), job.get("company"), job.get("country"), job.get("source")]
@@ -84,154 +91,117 @@ def dedupe_jobs(jobs: List[Dict[str, Any]], existing_ids: set) -> List[Dict[str,
 
 
 # ---------------------------------------------------------------------
-# Google Jobs Scraper
+# Adzuna API (REAL JOBS)
 # ---------------------------------------------------------------------
-def fetch_google_jobs(country: str) -> List[Dict[str, Any]]:
-    """Search Google Jobs for Gulf hospitality positions."""
+def fetch_adzuna(country: str) -> List[Dict[str, Any]]:
+    """Fetch real hospitality jobs from Adzuna API."""
     jobs = []
-    search_terms = [
-        "hospitality jobs",
-        "hotel jobs",
-        "barista jobs",
-        "waiter jobs",
-        "housekeeping jobs",
-        "customer service jobs"
-    ]
-    
-    for term in search_terms:
+    country_code = COUNTRY_CODES.get(country)
+    if not country_code or not ADZUNA_APP_ID or not ADZUNA_APP_KEY:
+        return jobs
+
+    # Search terms for hospitality
+    queries = ["hospitality", "hotel", "barista", "waiter", "housekeeping", "customer service"]
+
+    for query in queries:
         try:
-            query = f"{term} in {country} gulf"
-            url = f"https://www.google.com/search?q={quote_plus(query)}&ibp=htl;jobs"
-            print(f"  Google Jobs: {query}")
-            
+            url = (
+                f"https://api.adzuna.com/v1/api/jobs/{country_code}/search/1"
+                f"?app_id={ADZUNA_APP_ID}"
+                f"&app_key={ADZUNA_APP_KEY}"
+                f"&what={query}"
+                f"&results_per_page=10"
+                f"&content-type=application/json"
+            )
+            print(f"  Adzuna ({country}): {query}")
             resp = requests.get(url, headers=HEADERS, timeout=15)
+
             if resp.status_code != 200:
                 print(f"    -> HTTP {resp.status_code}")
                 continue
-                
-            soup = BeautifulSoup(resp.text, "lxml")
-            
-            # Google Jobs result cards
-            cards = soup.find_all("div", class_=re.compile("BjJfJf|PUpOsf|gws-plugins-horizon-jobs__li-ed"))
-            
-            if not cards:
-                # Try alternative selectors
-                cards = soup.find_all("li", class_=re.compile("iFjolb|gws-plugins-horizon-jobs"))
-            
-            for card in cards[:8]:
+
+            data = resp.json()
+            results = data.get("results", [])
+
+            for item in results:
                 try:
-                    title_el = (
-                        card.find("div", class_=re.compile("BjJfJf")) or
-                        card.find("h2") or
-                        card.find("div", role="heading")
-                    )
-                    company_el = (
-                        card.find("div", class_=re.compile("vNEEBe")) or
-                        card.find("span", class_=re.compile("company"))
-                    )
-                    location_el = (
-                        card.find("div", class_=re.compile("Qk80Jf")) or
-                        card.find("span", class_=re.compile("location"))
-                    )
-                    
-                    if not title_el:
-                        continue
-                        
-                    title = title_el.get_text(strip=True)
-                    company = company_el.get_text(strip=True) if company_el else "Unknown"
-                    location = location_el.get_text(strip=True) if location_el else country
-                    
-                    # Clean location
-                    location_clean = location.split("·")[0].strip()
-                    location_clean = location_clean.split("via")[0].strip()
-                    
+                    title = item.get("title", "")
+                    company = item.get("company", {}).get("display_name", "Unknown")
+                    location = item.get("location", {}).get("display_name", country)
+                    description = item.get("description", "")[:300]
+                    redirect_url = item.get("redirect_url", "")
+                    salary_min = int(item.get("salary_min", 0) or 0)
+                    salary_max = int(item.get("salary_max", 0) or 0)
+                    created = item.get("created", date.today().isoformat())
+
+                    # Extract city
                     city = country
                     for c in COUNTRY_INFO.get(country, []):
-                        if c.lower() in location_clean.lower():
+                        if c.lower() in location.lower():
                             city = c
                             break
-                    
+
+                    # Check for visa sponsorship in description
+                    visa = None
+                    desc_lower = description.lower()
+                    if any(w in desc_lower for w in ["visa sponsorship", "visa provided", "work permit", "employment visa"]):
+                        visa = True
+
+                    # Check for accommodation
+                    accommodation = None
+                    if any(w in desc_lower for w in ["accommodation", "housing", "stay", "lodging"]):
+                        accommodation = True
+
                     job_data = {
                         "id": "",
                         "title": title,
                         "company": company,
                         "country": country,
                         "city": city,
-                        "salary_min": 0,
-                        "salary_max": 0,
+                        "salary_min": salary_min,
+                        "salary_max": salary_max,
                         "currency": "USD",
-                        "visa_sponsorship": None,
-                        "accommodation": None,
-                        "description": f"{title} at {company} in {location_clean}",
-                        "source": "Google Jobs",
-                        "url": url,
-                        "posted_date": date.today().isoformat(),
+                        "visa_sponsorship": visa,
+                        "accommodation": accommodation,
+                        "description": description,
+                        "source": "Adzuna",
+                        "url": redirect_url,
+                        "posted_date": created,
                         "company_verified": True,
                     }
                     job_data["id"] = generate_job_id(job_data)
                     jobs.append(job_data)
-                    
+
                 except Exception as e:
-                    print(f"    -> Card parse error: {e}")
+                    print(f"    -> Parse error: {e}")
                     continue
-                    
-            time.sleep(2)
-            
+
+            time.sleep(1)  # Rate limit: 1 request per second
+
         except Exception as e:
-            print(f"  -> Google Jobs error for '{term}': {e}")
+            print(f"  -> Error: {e}")
             continue
-            
-    print(f"  -> Google Jobs ({country}): {len(jobs)} found")
+
+    print(f"  -> Adzuna ({country}): {len(jobs)} jobs found")
     return jobs
 
 
 # ---------------------------------------------------------------------
-# Stubs for other sources
-# ---------------------------------------------------------------------
-def fetch_indeed(country: str) -> List[Dict[str, Any]]:
-    """Indeed blocks scrapers — use Google Jobs above instead."""
-    return []
-
-
-def fetch_bayt(country: str) -> List[Dict[str, Any]]:
-    """Bayt blocks scrapers — use Google Jobs above instead."""
-    return []
-
-
-def fetch_gulftalent(country: str) -> List[Dict[str, Any]]:
-    return []
-
-
-def fetch_naukrigulf(country: str) -> List[Dict[str, Any]]:
-    return []
-
-
-SOURCE_FETCHERS = {
-    "Google Jobs": fetch_google_jobs,
-    "Indeed": fetch_indeed,
-    "Bayt": fetch_bayt,
-    "GulfTalent": fetch_gulftalent,
-    "Naukrigulf": fetch_naukrigulf,
-}
-
-
-# ---------------------------------------------------------------------
-# Mock data (fallback)
+# Mock fallback
 # ---------------------------------------------------------------------
 def _generate_mock_job(next_seq: int) -> Dict[str, Any]:
     title = random.choice(TITLES)
     country = random.choice(list(COUNTRY_INFO.keys()))
     city = random.choice(COUNTRY_INFO[country])
     company = random.choice(COMPANIES)
-    source = random.choice(SOURCES)
     visa = random.random() > 0.2
     accommodation = random.random() > 0.45
     salary_min = random.randint(550, 1100)
     salary_max = salary_min + random.randint(80, 250)
 
-    desc_bits = [f"{title} position open at {company} in {city}, {country}."]
+    desc_bits = [f"{title} at {company} in {city}, {country}."]
     if visa:
-        desc_bits.append("Visa sponsorship and employment visa provided.")
+        desc_bits.append("Visa sponsorship provided.")
     if accommodation:
         desc_bits.append("Staff accommodation provided.")
 
@@ -247,7 +217,7 @@ def _generate_mock_job(next_seq: int) -> Dict[str, Any]:
         "visa_sponsorship": visa,
         "accommodation": accommodation,
         "description": " ".join(desc_bits),
-        "source": source,
+        "source": "Adzuna",
         "url": f"https://example-careers.com/jobs/{title.lower().replace(' ', '-')}-{next_seq:04d}",
         "posted_date": (date.today() - timedelta(days=random.randint(0, 5))).isoformat(),
         "company_verified": True,
@@ -261,29 +231,20 @@ def load_existing_jobs() -> List[Dict[str, Any]]:
         return json.load(f)
 
 
-def fetch_all_jobs(new_mock_count: int = 2) -> List[Dict[str, Any]]:
-    """Combines existing jobs + Google Jobs scraping + mock fallback."""
+def fetch_all_jobs(new_mock_count: int = 0) -> List[Dict[str, Any]]:
+    """Fetch real jobs from Adzuna API. No mock fallback."""
     existing_jobs = load_existing_jobs()
     existing_ids = {j["id"] for j in existing_jobs}
 
-    # Real scraping
     live_jobs: List[Dict[str, Any]] = []
-    for country in COUNTRY_INFO:
-        for name, fetcher in SOURCE_FETCHERS.items():
-            try:
-                results = fetcher(country)
-                live_jobs.extend(results)
-            except Exception as e:
-                print(f"  -> {name} ({country}) failed: {e}")
+    for country in COUNTRY_CODES:
+        try:
+            results = fetch_adzuna(country)
+            live_jobs.extend(results)
+        except Exception as e:
+            print(f"  -> Adzuna ({country}) failed: {e}")
 
-    # Mock fallback
-    next_seq = len(existing_jobs) + len(live_jobs) + 1
-    mock_jobs = []
-    if not live_jobs:
-        print("  No real jobs found — generating mock jobs as fallback")
-        mock_jobs = [_generate_mock_job(next_seq + i) for i in range(new_mock_count)]
-
-    combined = existing_jobs + live_jobs + mock_jobs
+    combined = existing_jobs + live_jobs
     return dedupe_jobs(combined, existing_ids=set())
 
 
@@ -294,6 +255,7 @@ def save_jobs(jobs: List[Dict[str, Any]]) -> None:
 
 
 if __name__ == "__main__":
+    print("Fetching real jobs from Adzuna API...")
     jobs = fetch_all_jobs()
     save_jobs(jobs)
-    print(f"Saved {len(jobs)} jobs to {JOBS_FILE}")
+    print(f"\nSaved {len(jobs)} jobs to {JOBS_FILE}")
