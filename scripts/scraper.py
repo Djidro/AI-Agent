@@ -1,12 +1,8 @@
 """
 scripts/scraper.py
 -----------------------------------------------------------------------
-Job source aggregator. Combines real job board scraping with mock data
-as fallback for development/testing.
-
-Currently implemented:
-  - Indeed.ae (real scraping via requests + BeautifulSoup)
-  - Mock generator (fallback when scraping fails)
+Job source aggregator. Combines Google Jobs scraping + Indeed/Bayt
+with mock data as fallback.
 
 Requires: pip install requests beautifulsoup4 lxml
 -----------------------------------------------------------------------
@@ -45,9 +41,8 @@ COMPANIES = [
     "Manama Bay Resort", "Jeddah Heights Hotel", "Salalah Garden Resort",
 ]
 
-SOURCES = ["Indeed", "Bayt", "GulfTalent", "Naukrigulf", "Company career page"]
+SOURCES = ["Google Jobs", "Indeed", "Bayt", "GulfTalent", "Naukrigulf"]
 
-# User-Agent to avoid being blocked
 HEADERS = {
     "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36",
     "Accept-Language": "en-US,en;q=0.9",
@@ -55,7 +50,7 @@ HEADERS = {
 
 
 # ---------------------------------------------------------------------
-# Helper: hash-based job IDs (stable deduplication)
+# Job ID generation (stable deduplication)
 # ---------------------------------------------------------------------
 def _job_signature(job: Dict[str, Any]) -> str:
     parts = [job.get("title"), job.get("company"), job.get("country"), job.get("source")]
@@ -89,33 +84,55 @@ def dedupe_jobs(jobs: List[Dict[str, Any]], existing_ids: set) -> List[Dict[str,
 
 
 # ---------------------------------------------------------------------
-# Indeed.ae Scraper (REAL JOBS)
+# Google Jobs Scraper
 # ---------------------------------------------------------------------
-
-def fetch_indeed(country: str) -> List[Dict[str, Any]]:
+def fetch_google_jobs(country: str) -> List[Dict[str, Any]]:
     """Search Google Jobs for Gulf hospitality positions."""
     jobs = []
-    search_terms = ["hospitality jobs", "hotel jobs", "barista", "waiter", "housekeeping"]
+    search_terms = [
+        "hospitality jobs",
+        "hotel jobs",
+        "barista jobs",
+        "waiter jobs",
+        "housekeeping jobs",
+        "customer service jobs"
+    ]
     
     for term in search_terms:
         try:
-            query = f"{term} {country} gulf jobs"
+            query = f"{term} in {country} gulf"
             url = f"https://www.google.com/search?q={quote_plus(query)}&ibp=htl;jobs"
-            print(f"  Searching: {query}")
+            print(f"  Google Jobs: {query}")
             
             resp = requests.get(url, headers=HEADERS, timeout=15)
             if resp.status_code != 200:
+                print(f"    -> HTTP {resp.status_code}")
                 continue
                 
             soup = BeautifulSoup(resp.text, "lxml")
-            # Google Jobs cards
-            cards = soup.find_all("div", class_=re.compile("BjJfJf|PUpOsf"))
             
-            for card in cards[:10]:
+            # Google Jobs result cards
+            cards = soup.find_all("div", class_=re.compile("BjJfJf|PUpOsf|gws-plugins-horizon-jobs__li-ed"))
+            
+            if not cards:
+                # Try alternative selectors
+                cards = soup.find_all("li", class_=re.compile("iFjolb|gws-plugins-horizon-jobs"))
+            
+            for card in cards[:8]:
                 try:
-                    title_el = card.find("div", class_=re.compile("BjJfJf"))
-                    company_el = card.find("div", class_=re.compile("vNEEBe"))
-                    location_el = card.find("div", class_=re.compile("Qk80Jf"))
+                    title_el = (
+                        card.find("div", class_=re.compile("BjJfJf")) or
+                        card.find("h2") or
+                        card.find("div", role="heading")
+                    )
+                    company_el = (
+                        card.find("div", class_=re.compile("vNEEBe")) or
+                        card.find("span", class_=re.compile("company"))
+                    )
+                    location_el = (
+                        card.find("div", class_=re.compile("Qk80Jf")) or
+                        card.find("span", class_=re.compile("location"))
+                    )
                     
                     if not title_el:
                         continue
@@ -124,9 +141,13 @@ def fetch_indeed(country: str) -> List[Dict[str, Any]]:
                     company = company_el.get_text(strip=True) if company_el else "Unknown"
                     location = location_el.get_text(strip=True) if location_el else country
                     
+                    # Clean location
+                    location_clean = location.split("·")[0].strip()
+                    location_clean = location_clean.split("via")[0].strip()
+                    
                     city = country
                     for c in COUNTRY_INFO.get(country, []):
-                        if c.lower() in location.lower():
+                        if c.lower() in location_clean.lower():
                             city = c
                             break
                     
@@ -141,7 +162,7 @@ def fetch_indeed(country: str) -> List[Dict[str, Any]]:
                         "currency": "USD",
                         "visa_sponsorship": None,
                         "accommodation": None,
-                        "description": f"{title} at {company} in {location}",
+                        "description": f"{title} at {company} in {location_clean}",
                         "source": "Google Jobs",
                         "url": url,
                         "posted_date": date.today().isoformat(),
@@ -150,126 +171,52 @@ def fetch_indeed(country: str) -> List[Dict[str, Any]]:
                     job_data["id"] = generate_job_id(job_data)
                     jobs.append(job_data)
                     
-                except Exception:
+                except Exception as e:
+                    print(f"    -> Card parse error: {e}")
                     continue
                     
-            time.sleep(3)
+            time.sleep(2)
             
         except Exception as e:
-            print(f"  -> Error: {e}")
+            print(f"  -> Google Jobs error for '{term}': {e}")
+            continue
             
-    print(f"  -> Google Jobs ({country}): {len(jobs)} jobs found")
+    print(f"  -> Google Jobs ({country}): {len(jobs)} found")
     return jobs
 
+
 # ---------------------------------------------------------------------
-# Bayt.com Scraper (REAL JOBS)
+# Stubs for other sources
 # ---------------------------------------------------------------------
+def fetch_indeed(country: str) -> List[Dict[str, Any]]:
+    """Indeed blocks scrapers — use Google Jobs above instead."""
+    return []
+
+
 def fetch_bayt(country: str) -> List[Dict[str, Any]]:
-    """Scrapes Bayt.com for Gulf hospitality jobs."""
-    jobs = []
-    try:
-        # Bayt search URL format
-        url = f"https://www.bayt.com/en/{country.lower().replace(' ', '-')}/jobs/?sort=date"
-        print(f"  Scraping Bayt: {url}")
-        
-        resp = requests.get(url, headers=HEADERS, timeout=15)
-        if resp.status_code != 200:
-            print(f"    -> HTTP {resp.status_code}, skipping")
-            return jobs
-
-        soup = BeautifulSoup(resp.text, "lxml")
-        cards = soup.find_all("li", class_=re.compile("has-pointer-d|jb-list-item"))
-        
-        for card in cards[:10]:
-            try:
-                title_el = card.find("h2") or card.find("a", class_=re.compile("jb-title"))
-                company_el = card.find("b") or card.find("div", class_=re.compile("jb-company"))
-                location_el = card.find("dd") or card.find("span", class_=re.compile("jb-location"))
-                link_el = card.find("a", href=re.compile("/en/"))
-
-                if not title_el:
-                    continue
-
-                title = title_el.get_text(strip=True)
-                company = company_el.get_text(strip=True) if company_el else "Unknown"
-                location_text = location_el.get_text(strip=True) if location_el else country
-                
-                city = country
-                for c in COUNTRY_INFO.get(country, []):
-                    if c.lower() in location_text.lower():
-                        city = c
-                        break
-
-                url_link = ""
-                if link_el:
-                    href = link_el.get("href", "")
-                    if href.startswith("/"):
-                        url_link = f"https://www.bayt.com{href}"
-                    else:
-                        url_link = href
-
-                job_data = {
-                    "id": "",
-                    "title": title,
-                    "company": company,
-                    "country": country,
-                    "city": city,
-                    "salary_min": 0,
-                    "salary_max": 0,
-                    "currency": "USD",
-                    "visa_sponsorship": None,
-                    "accommodation": None,
-                    "description": title,
-                    "source": "Bayt",
-                    "url": url_link,
-                    "posted_date": date.today().isoformat(),
-                    "company_verified": True,
-                }
-                job_data["id"] = generate_job_id(job_data)
-                jobs.append(job_data)
-
-            except Exception as e:
-                print(f"    -> Error parsing Bayt card: {e}")
-                continue
-
-        time.sleep(2)
-
-    except Exception as e:
-        print(f"  -> Bayt error for {country}: {e}")
-
-    print(f"  -> Bayt ({country}): {len(jobs)} jobs found")
-    return jobs
+    """Bayt blocks scrapers — use Google Jobs above instead."""
+    return []
 
 
-# ---------------------------------------------------------------------
-# Stubs for other sources (ready for future implementation)
-# ---------------------------------------------------------------------
 def fetch_gulftalent(country: str) -> List[Dict[str, Any]]:
-    """TODO: GulfTalent requires API key or advanced scraping."""
     return []
 
 
 def fetch_naukrigulf(country: str) -> List[Dict[str, Any]]:
-    """TODO: NaukriGulf blocks scrapers — needs API."""
-    return []
-
-
-def fetch_company_career_pages(country: str) -> List[Dict[str, Any]]:
-    """TODO: Add direct career page scrapers for major Gulf hotels."""
     return []
 
 
 SOURCE_FETCHERS = {
+    "Google Jobs": fetch_google_jobs,
     "Indeed": fetch_indeed,
     "Bayt": fetch_bayt,
     "GulfTalent": fetch_gulftalent,
     "Naukrigulf": fetch_naukrigulf,
-    "Company career page": fetch_company_career_pages,
 }
 
 
 # ---------------------------------------------------------------------
-# Mock data (fallback when scrapers return nothing)
+# Mock data (fallback)
 # ---------------------------------------------------------------------
 def _generate_mock_job(next_seq: int) -> Dict[str, Any]:
     title = random.choice(TITLES)
@@ -284,10 +231,7 @@ def _generate_mock_job(next_seq: int) -> Dict[str, Any]:
 
     desc_bits = [f"{title} position open at {company} in {city}, {country}."]
     if visa:
-        desc_bits.append(random.choice([
-            "Visa sponsorship and employment visa provided.",
-            "Work permit fully sponsored by employer.",
-        ]))
+        desc_bits.append("Visa sponsorship and employment visa provided.")
     if accommodation:
         desc_bits.append("Staff accommodation provided.")
 
@@ -317,8 +261,8 @@ def load_existing_jobs() -> List[Dict[str, Any]]:
         return json.load(f)
 
 
-def fetch_all_jobs(new_mock_count: int = 3) -> List[Dict[str, Any]]:
-    """Combines existing jobs + real scraping + mock fallback."""
+def fetch_all_jobs(new_mock_count: int = 2) -> List[Dict[str, Any]]:
+    """Combines existing jobs + Google Jobs scraping + mock fallback."""
     existing_jobs = load_existing_jobs()
     existing_ids = {j["id"] for j in existing_jobs}
 
@@ -332,7 +276,7 @@ def fetch_all_jobs(new_mock_count: int = 3) -> List[Dict[str, Any]]:
             except Exception as e:
                 print(f"  -> {name} ({country}) failed: {e}")
 
-    # Mock fallback only if no real jobs found
+    # Mock fallback
     next_seq = len(existing_jobs) + len(live_jobs) + 1
     mock_jobs = []
     if not live_jobs:
